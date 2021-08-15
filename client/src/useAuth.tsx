@@ -22,11 +22,32 @@ export default function useAuth(code: string) {
 				setRefreshToken(data.refreshToken);
 				setAccessToken(data.accessToken);
 				setExpiresIn(data.expiresIn);
-				console.log(data);
 			})
 			.catch((err) => {
 				console.log(err);
 				window.location.href = "/";
 			});
 	}, [code]);
+
+	useEffect(() => {
+		if (!refreshToken || !expiresIn) return;
+
+		const interval = setInterval(() => {
+			axios
+				.post("http://localhost:5000/refresh", {
+					refreshToken,
+				})
+				.then((res) => {
+					const data: responseDataType = res.data;
+					setAccessToken(data.accessToken);
+					setExpiresIn(data.expiresIn);
+				})
+				.catch((err) => {
+					console.log(err);
+					window.location.href = "/";
+				});
+		}, (expiresIn - 60) * 1000);
+
+		return () => clearInterval(interval);
+	}, [expiresIn, refreshToken]);
 }

@@ -14,14 +14,48 @@ type authResponseType = {
 	expires_in: number;
 };
 
+interface refreshBody {
+	refreshToken: string;
+}
+
+interface spotifyApiInfo {
+	clientId: string;
+	redirectUri: string;
+	clientSecret: string;
+	refreshToken?: string;
+}
+
+const apiInfo: spotifyApiInfo = {
+	clientId: "9ac40adab4e04e5ab80e1bd8fe9c5021",
+	redirectUri: "http://localhost:3000",
+	clientSecret: "8c1a00049b6546fd88c6a3696f5fea06",
+};
+
+app.post("/refresh", function RequestHandler(req, res, next) {
+	const { refreshToken } = req.body as refreshBody;
+
+	apiInfo.refreshToken = refreshToken;
+
+	const spotifyApi = new SpotifyWebApi(apiInfo);
+
+	spotifyApi
+		.refreshAccessToken()
+		.then((data: any) => {
+			res.json({
+				accessToken: data.body.access_token,
+				expiresIn: data.body.expires_in,
+			});
+		})
+		.catch((err: any) => {
+			console.log(err);
+			res.sendStatus(400);
+		});
+});
+
 app.post("/login", function RequestHandler(req, res, next) {
 	const code = (req.body as { code: string }).code;
 
-	const spotifyApi = new SpotifyWebApi({
-		clientId: "9ac40adab4e04e5ab80e1bd8fe9c5021",
-		redirectUri: "http://localhost:3000",
-		clientSecret: "8c1a00049b6546fd88c6a3696f5fea06",
-	});
+	const spotifyApi = new SpotifyWebApi(apiInfo);
 
 	spotifyApi
 		.authorizationCodeGrant(code)
@@ -32,8 +66,7 @@ app.post("/login", function RequestHandler(req, res, next) {
 				refreshToken: (data.body as authResponseType).refresh_token,
 			});
 		})
-		.catch((err) => {
-			console.log(err);
+		.catch(() => {
 			res.status(400);
 		});
 });
