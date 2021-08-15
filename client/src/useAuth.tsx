@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 interface responseDataType {
@@ -50,4 +50,6 @@ export default function useAuth(code: string) {
 
 		return () => clearInterval(interval);
 	}, [expiresIn, refreshToken]);
+
+	return accessToken;
 }
