@@ -3,16 +3,11 @@ import useAuth from "./useAuth";
 import { Container, Form } from "react-bootstrap";
 import SpotifyWebApi from "spotify-web-api-node";
 import TrackSearchResult from "./TrackSearchResult";
+import SongPlayer from "./SongPlayer";
+import { trackInterface } from "./TrackSearchResult";
 
 interface dashBoardProps {
 	code: string;
-}
-
-interface spotifyApiResults {
-	artist: string;
-	title: string;
-	uri: string;
-	albumUrl: string;
 }
 
 const spotifyWebApi = new SpotifyWebApi({
@@ -22,9 +17,17 @@ const spotifyWebApi = new SpotifyWebApi({
 const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 	const [search, setSearch] = useState<string>("");
 	const [searchResult, setSearchResult] = useState<
-		spotifyApiResults[] | undefined
+		trackInterface[] | undefined
 	>([]);
+	const [playingTrack, setPlayingTrack] = useState<
+		trackInterface | undefined
+	>();
 	const accessToken = useAuth(code);
+
+	function chooseTrack(track: trackInterface) {
+		setPlayingTrack(track);
+		setSearch("");
+	}
 
 	useEffect(() => {
 		spotifyWebApi.setAccessToken(accessToken);
@@ -85,10 +88,18 @@ const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 			/>
 			<div className="flex-grow-1 my-2" style={{ overflowY: "auto" }}>
 				{searchResult!.map((track) => {
-					return <TrackSearchResult track={track} key={track.uri} />;
+					return (
+						<TrackSearchResult
+							track={track}
+							key={track.uri}
+							chooseTrack={chooseTrack}
+						/>
+					);
 				})}
 			</div>
-			<div>Bottom</div>
+			<div>
+				<SongPlayer accessToken={accessToken} trackUri={playingTrack} />
+			</div>
 		</Container>
 	);
 };

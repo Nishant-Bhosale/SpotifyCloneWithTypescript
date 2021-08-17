@@ -1,19 +1,30 @@
 import React from "react";
 
-interface searchResultProps {
-	track: {
-		artist: string;
-		title: string;
-		uri: string;
-		albumUrl: string;
-	};
+export interface trackInterface {
+	artist: string;
+	title: string;
+	uri: string;
+	albumUrl: string;
 }
 
-const TrackSearchResult: React.FC<searchResultProps> = ({ track }) => {
+interface searchResultProps {
+	track: trackInterface;
+	chooseTrack: (track: trackInterface) => void;
+}
+
+const TrackSearchResult: React.FC<searchResultProps> = ({
+	track,
+	chooseTrack,
+}) => {
+	function handlePlay() {
+		chooseTrack(track);
+	}
+
 	return (
 		<div
 			className="d-flex m-2 align-items-center"
 			style={{ cursor: "pointer" }}
+			onClick={handlePlay}
 		>
 			<img
 				src={track.albumUrl}
