@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import useAuth from "./useAuth";
 import { Container, Form } from "react-bootstrap";
 import SpotifyWebApi from "spotify-web-api-node";
+import TrackSearchResult from "./TrackSearchResult";
 
 interface dashBoardProps {
 	code: string;
@@ -24,7 +25,6 @@ const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 		spotifyApiResults[] | undefined
 	>([]);
 	const accessToken = useAuth(code);
-	console.log(searchResult);
 
 	useEffect(() => {
 		spotifyWebApi.setAccessToken(accessToken);
@@ -33,9 +33,12 @@ const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 	useEffect(() => {
 		if (!search) return setSearchResult([]);
 		if (!accessToken) return;
+
+		let cancel = false;
 		spotifyWebApi
 			.searchTracks(search)
 			.then((res) => {
+				if (cancel) return;
 				setSearchResult(
 					res.body.tracks?.items.map((track) => {
 						const smallestAlbumImage = (
@@ -66,6 +69,10 @@ const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 				);
 			})
 			.catch((err) => console.log(err));
+
+		return () => {
+			cancel = true;
+		};
 	}, [search, accessToken]);
 
 	return (
@@ -76,7 +83,11 @@ const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 				value={search}
 				onChange={(e) => setSearch(e.target.value)}
 			/>
-			<div className="flex-grow-1 my-2" style={{ overflowY: "auto" }}></div>
+			<div className="flex-grow-1 my-2" style={{ overflowY: "auto" }}>
+				{searchResult!.map((track) => {
+					return <TrackSearchResult track={track} key={track.uri} />;
+				})}
+			</div>
 			<div>Bottom</div>
 		</Container>
 	);
