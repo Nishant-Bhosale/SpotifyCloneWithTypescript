@@ -7,14 +7,24 @@ interface dashBoardProps {
 	code: string;
 }
 
+interface spotifyApiResults {
+	artist: string;
+	title: string;
+	uri: string;
+	albumUrl: string;
+}
+
 const spotifyWebApi = new SpotifyWebApi({
 	clientId: "9ac40adab4e04e5ab80e1bd8fe9c5021",
 });
 
 const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 	const [search, setSearch] = useState<string>("");
-	const [searchResult, setSearchResult] = useState([]);
+	const [searchResult, setSearchResult] = useState<
+		spotifyApiResults[] | undefined
+	>([]);
 	const accessToken = useAuth(code);
+	console.log(searchResult);
 
 	useEffect(() => {
 		spotifyWebApi.setAccessToken(accessToken);
@@ -23,12 +33,37 @@ const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 	useEffect(() => {
 		if (!search) return setSearchResult([]);
 		if (!accessToken) return;
-		console.log("hello");
-		console.log(accessToken);
 		spotifyWebApi
 			.searchTracks(search)
 			.then((res) => {
-				console.log(res.body.tracks);
+				setSearchResult(
+					res.body.tracks?.items.map((track) => {
+						const smallestAlbumImage = (
+							track.album?.images as SpotifyApi.ImageObject[]
+						)?.reduce(
+							(
+								smallestImg: SpotifyApi.ImageObject,
+								currentImg: SpotifyApi.ImageObject,
+							): SpotifyApi.ImageObject => {
+								if (
+									currentImg.height !== undefined &&
+									smallestImg.height !== undefined
+								) {
+									if (currentImg.height < smallestImg.height) return currentImg;
+								}
+								return smallestImg;
+							},
+							track.album.images[0],
+						);
+
+						return {
+							artist: track.artists[0].name,
+							title: track.name,
+							uri: track.uri,
+							albumUrl: smallestAlbumImage.url,
+						};
+					}),
+				);
 			})
 			.catch((err) => console.log(err));
 	}, [search, accessToken]);
