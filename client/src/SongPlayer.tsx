@@ -1,10 +1,9 @@
 import React from "react";
 import SpotifyPlayer from "react-spotify-web-playback";
-import { trackInterface } from "./TrackSearchResult";
 
 interface songPlayerProps {
 	accessToken: string;
-	trackUri: trackInterface;
+	trackUri: string;
 }
 
 const SongPlayer: React.FC<songPlayerProps> = ({ accessToken, trackUri }) => {
@@ -15,6 +14,7 @@ const SongPlayer: React.FC<songPlayerProps> = ({ accessToken, trackUri }) => {
 				token={accessToken}
 				showSaveIcon
 				uris={trackUri ? [trackUri] : []}
+				play={true}
 			/>
 		</div>
 	);

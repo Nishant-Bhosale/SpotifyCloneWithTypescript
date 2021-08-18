@@ -19,9 +19,7 @@ const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 	const [searchResult, setSearchResult] = useState<
 		trackInterface[] | undefined
 	>([]);
-	const [playingTrack, setPlayingTrack] = useState<
-		trackInterface | undefined
-	>();
+	const [playingTrack, setPlayingTrack] = useState<trackInterface>();
 	const accessToken = useAuth(code);
 
 	function chooseTrack(track: trackInterface) {
@@ -98,7 +96,10 @@ const DashBoard: React.FC<dashBoardProps> = ({ code }) => {
 				})}
 			</div>
 			<div>
-				<SongPlayer accessToken={accessToken} trackUri={playingTrack} />
+				<SongPlayer
+					accessToken={accessToken}
+					trackUri={playingTrack ? playingTrack!?.uri : ""}
+				/>
 			</div>
 		</Container>
 	);
